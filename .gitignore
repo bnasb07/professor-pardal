@@ -1,0 +1,31 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+build_tmp/
+*.spec
+
+# Banco de dados vetorial (gerado automaticamente)
+.pardal_db/
+
+# Materiais de estudo (conteúdo pessoal do usuário)
+study_materials/
+
+# Configuração com chaves de API
+config.json
+
+# Arquivos temporários
+*.tmp
+*.log
+_launcher_stub.py
+
+# Ícone gerado (pode ser regenerado com gerar_icone.py)
+icon.ico
+
+# Launcher exe compilado (rebuildar com construir_instalador.bat)
+launcher/
