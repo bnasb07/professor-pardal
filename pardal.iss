@@ -37,8 +37,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 
 [Tasks]
-Name: "desktopicon";     Description: "Criar atalho na Área de Trabalho";    GroupDescription: "Atalhos:"; Flags: checked
-Name: "startupicon";     Description: "Iniciar com o Windows";                GroupDescription: "Opções:";  Flags: unchecked
+Name: "desktopicon"; Description: "Criar atalho na Area de Trabalho"; GroupDescription: "Atalhos:"
+Name: "startupicon"; Description: "Iniciar com o Windows";          GroupDescription: "Opcoes:";  Flags: unchecked
 
 [Files]
 ; Arquivos do app
@@ -98,14 +98,13 @@ begin
   if not IsPythonInstalled() then
   begin
     MsgBox(
-      'Python não foi encontrado no seu computador.' + #13#10 +
-      #13#10 +
-      'Instale o Python 3.10 ou superior em:' + #13#10 +
-      'https://python.org/downloads' + #13#10 +
-      #13#10 +
-      'IMPORTANTE: Marque "Add Python to PATH" durante a instalação.' + #13#10 +
-      #13#10 +
-      'Após instalar o Python, execute este instalador novamente.',
+      'Python nao foi encontrado no seu computador.' + Chr(13) + Chr(10) +
+      Chr(13) + Chr(10) +
+      'Instale o Python 3.10 ou superior em python.org/downloads' + Chr(13) + Chr(10) +
+      Chr(13) + Chr(10) +
+      'IMPORTANTE: Marque "Add Python to PATH" durante a instalacao.' + Chr(13) + Chr(10) +
+      Chr(13) + Chr(10) +
+      'Apos instalar o Python, execute este instalador novamente.',
       mbError, MB_OK
     );
     Result := False;
