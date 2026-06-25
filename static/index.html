@@ -23,7 +23,7 @@
     --success:   #3fb950;
     --radius:    12px;
     --radius-sm: 8px;
-    --sidebar-w: 260px;
+    --sidebar-w: 270px;
     --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
@@ -34,32 +34,63 @@
   .sidebar {
     width: var(--sidebar-w); min-width: var(--sidebar-w);
     background: var(--surface); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; padding: 20px 0;
+    display: flex; flex-direction: column;
   }
+
+  .sidebar-top { padding: 20px 0; }
+
   .logo {
     display: flex; align-items: center; gap: 12px;
-    padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+    padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
   }
   .logo-icon {
-    width: 42px; height: 42px; background: var(--gold-glow);
+    width: 40px; height: 40px; background: var(--gold-glow);
     border: 1px solid var(--gold-dim); border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
   }
-  .logo-text h1 { font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
+  .logo-text h1 { font-size: 14px; font-weight: 700; letter-spacing: -.2px; }
   .logo-text p  { font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: .5px; text-transform: uppercase; }
 
-  .nav { flex: 1; padding: 0 10px; display: flex; flex-direction: column; gap: 4px; }
+  .nav { padding: 0 10px; display: flex; flex-direction: column; gap: 2px; }
   .nav-btn {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
     border-radius: var(--radius-sm); cursor: pointer; border: none;
     background: transparent; color: var(--muted); font-family: var(--font);
-    font-size: 14px; font-weight: 500; transition: all .15s; width: 100%; text-align: left;
+    font-size: 13px; font-weight: 500; transition: all .15s; width: 100%; text-align: left;
   }
   .nav-btn:hover  { background: var(--surface2); color: var(--text); }
   .nav-btn.active { background: var(--gold-glow); color: var(--gold); border: 1px solid rgba(232,160,32,.2); }
-  .nav-btn .icon  { font-size: 16px; width: 20px; text-align: center; }
+  .nav-btn .icon  { font-size: 15px; width: 20px; text-align: center; }
 
-  .sidebar-footer { padding: 16px 20px 0; border-top: 1px solid var(--border); }
+  /* ── Projects in sidebar ── */
+  .sidebar-projects {
+    flex: 1; overflow-y: auto; padding: 0 10px 8px;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-projects::-webkit-scrollbar { width: 4px; }
+  .sidebar-projects::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .proj-section-label {
+    font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .8px; padding: 12px 12px 4px;
+  }
+
+  .proj-sidebar-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 12px;
+    border-radius: var(--radius-sm); cursor: pointer; border: none;
+    background: transparent; color: var(--muted); font-family: var(--font);
+    font-size: 13px; transition: all .15s; width: 100%; text-align: left;
+  }
+  .proj-sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .proj-sidebar-item.active {
+    background: var(--gold-glow); color: var(--gold);
+    border: 1px solid rgba(232,160,32,.2);
+  }
+  .proj-sidebar-item .proj-emoji { font-size: 14px; flex-shrink: 0; }
+  .proj-sidebar-item .proj-name  { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .proj-sidebar-item .proj-count { font-size: 10px; opacity: .6; flex-shrink: 0; }
+
+  .sidebar-footer { padding: 12px 20px; border-top: 1px solid var(--border); }
   .provider-badge { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   .provider-dot   { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
   .provider-dot.off { background: var(--danger); }
@@ -73,7 +104,7 @@
   #panel-chat { background: var(--bg); }
 
   .chat-header {
-    padding: 14px 24px;
+    padding: 12px 24px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
     display: flex; align-items: center; gap: 10px;
@@ -84,8 +115,15 @@
     background: var(--gold-glow); border: 1px solid var(--gold-dim);
     display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
   }
-  .chat-header-info h2 { font-size: 15px; font-weight: 600; }
-  .chat-header-info p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .chat-header-info h2 { font-size: 14px; font-weight: 600; }
+  .chat-header-info p  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .chat-header-project {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    background: var(--gold-glow); border: 1px solid rgba(232,160,32,.2);
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; color: var(--gold);
+    cursor: pointer; transition: all .15s;
+  }
+  .chat-header-project:hover { background: rgba(232,160,32,.25); }
 
   /* ── Messages ── */
   .messages {
@@ -174,7 +212,6 @@
     padding: 10px 12px; transition: border-color .15s;
   }
   .input-box:focus-within { border-color: var(--gold-dim); }
-
   .input-box textarea {
     flex:1; background:transparent; border:none; outline:none;
     color:var(--text); font-family:var(--font); font-size:14px; line-height:1.6;
@@ -185,7 +222,6 @@
   .input-box textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
   .input-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; }
-
   .icon-btn {
     width:34px; height:34px; border-radius:8px; border:1px solid var(--border);
     background:transparent; color:var(--muted); cursor:pointer;
@@ -203,26 +239,15 @@
   .send-btn:hover    { background:#f0b030; transform:scale(1.05); }
   .send-btn:disabled { opacity:.4; cursor:default; transform:none; }
 
-  /* ── Input footer: mode pill + hint ── */
   .input-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-    position: relative;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 8px; position: relative;
   }
-
-  /* Mode picker pill */
   .mode-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 10px 4px 8px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: var(--font); font-size: 12px; font-weight: 500;
-    cursor: pointer; transition: all .15s;
-    user-select: none;
+    padding: 4px 10px 4px 8px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); font-family: var(--font);
+    font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; user-select: none;
   }
   .mode-pill:hover { background: var(--surface2); color: var(--text); border-color: var(--gold-dim); }
   .mode-pill.open  { background: var(--gold-glow); color: var(--gold); border-color: var(--gold); }
@@ -230,30 +255,17 @@
   .mode-pill .pill-caret { font-size: 9px; opacity: .6; transition: transform .15s; }
   .mode-pill.open .pill-caret { transform: rotate(180deg); }
 
-  /* Mode popup */
   .mode-popup {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0 8px 32px rgba(0,0,0,.5);
-    min-width: 230px;
-    z-index: 100;
-    overflow: hidden;
-    animation: popUp .15s ease;
+    position: absolute; bottom: calc(100% + 6px); left: 0;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,.5); min-width: 230px; z-index: 100;
+    overflow: hidden; animation: popUp .15s ease;
   }
   @keyframes popUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
   .mode-popup-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 11px 16px;
-    cursor: pointer;
-    transition: background .1s;
-    font-size: 13px; color: var(--text);
-    border: none; background: transparent; width: 100%;
-    font-family: var(--font); text-align: left;
+    display: flex; align-items: center; gap: 12px; padding: 11px 16px; cursor: pointer;
+    transition: background .1s; font-size: 13px; color: var(--text);
+    border: none; background: transparent; width: 100%; font-family: var(--font); text-align: left;
   }
   .mode-popup-item:hover { background: var(--surface2); }
   .mode-popup-item.active { background: var(--gold-glow); }
@@ -265,25 +277,35 @@
   .mode-popup-divider { height: 1px; background: var(--border); margin: 0; }
 
   .input-hint { font-size: 11px; color: var(--muted); display: flex; gap: 12px; }
-
   .input-area.drag-over .input-box { border-color: var(--gold); background: var(--gold-glow); }
 
-  /* ── Docs panel ── */
-  #panel-docs { background: var(--bg); padding: 28px; overflow-y: auto; }
+  /* ── Scrollable panel area ── */
+  .panel-scroll { flex: 1; overflow-y: auto; padding: 28px; }
+  .panel-scroll::-webkit-scrollbar { width: 6px; }
+  .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
   .panel-header { margin-bottom: 24px; }
   .panel-header h2 { font-size: 20px; font-weight: 700; }
   .panel-header p  { font-size: 14px; color: var(--muted); margin-top: 4px; }
 
+  /* ── Upload zone ── */
   .upload-zone {
-    border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 20px;
+    border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px 20px;
     text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 24px; background: var(--surface);
   }
   .upload-zone:hover, .upload-zone.drag { border-color: var(--gold); background: var(--gold-glow); }
-  .upload-zone .icon { font-size: 36px; margin-bottom: 12px; }
+  .upload-zone .icon { font-size: 32px; margin-bottom: 10px; }
   .upload-zone p { color: var(--muted); font-size: 14px; }
   .upload-zone strong { color: var(--text); }
-  #file-input { display: none; }
+  .upload-zone .types-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+  .type-badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border);
+    color: var(--muted); background: var(--bg);
+  }
+  .type-badge.audio { border-color: rgba(99,179,237,.4); color: #63b3ed; background: rgba(99,179,237,.08); }
+  .type-badge.image { border-color: rgba(154,115,243,.4); color: #9a73f3; background: rgba(154,115,243,.08); }
 
+  /* ── Doc list ── */
   .doc-list { display: flex; flex-direction: column; gap: 10px; }
   .doc-item {
     display:flex; align-items:center; gap:14px;
@@ -295,9 +317,11 @@
   .doc-info { flex:1; min-width:0; }
   .doc-info strong { font-size:14px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .doc-info span   { font-size:12px; color:var(--muted); }
-  .doc-badge { font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; flex-shrink:0; }
-  .doc-badge.indexed { background:rgba(63,185,80,.15); color:var(--success); border:1px solid rgba(63,185,80,.3); }
-  .doc-badge.pending { background:rgba(232,160,32,.15); color:var(--gold);    border:1px solid rgba(232,160,32,.3); }
+  .doc-badge { font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; flex-shrink:0; white-space:nowrap; }
+  .doc-badge.indexed  { background:rgba(63,185,80,.15);  color:var(--success); border:1px solid rgba(63,185,80,.3); }
+  .doc-badge.pending  { background:rgba(232,160,32,.15); color:var(--gold);    border:1px solid rgba(232,160,32,.3); }
+  .doc-badge.audio-proc { background:rgba(99,179,237,.12);  color:#63b3ed; border:1px solid rgba(99,179,237,.3); }
+  .doc-badge.img-proc   { background:rgba(154,115,243,.12); color:#9a73f3; border:1px solid rgba(154,115,243,.3); }
   .doc-actions { display:flex; gap:6px; }
   .doc-btn {
     padding:5px 10px; border-radius:6px; border:1px solid var(--border);
@@ -307,8 +331,73 @@
   .doc-btn:hover { background:var(--surface2); color:var(--text); }
   .doc-btn.danger:hover { background:rgba(248,81,73,.1); color:var(--danger); border-color:var(--danger); }
 
+  /* ── Projects panel ── */
+  .proj-header-row {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
+  }
+  .proj-header-row h2 { font-size: 20px; font-weight: 700; }
+
+  .proj-card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 10px; transition: border-color .15s;
+  }
+  .proj-card:hover  { border-color: var(--gold-dim); }
+  .proj-card.active { border-color: var(--gold); background: var(--gold-glow); }
+
+  .proj-card-emoji {
+    width: 44px; height: 44px; border-radius: 10px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    flex-shrink: 0; border: 1px solid var(--border);
+    cursor: pointer; transition: all .15s;
+  }
+  .proj-card.active .proj-card-emoji { background: rgba(232,160,32,.2); border-color: var(--gold-dim); }
+
+  .proj-card-info { flex: 1; min-width: 0; }
+  .proj-card-name { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .proj-card-name input {
+    background: var(--bg); border: 1px solid var(--gold-dim); border-radius: 6px;
+    color: var(--text); font-family: var(--font); font-size: 14px; font-weight: 600;
+    padding: 3px 8px; outline: none; width: 200px;
+  }
+  .proj-active-badge {
+    font-size: 10px; padding: 2px 7px; background: var(--gold); color: #000;
+    border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .proj-card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .proj-card-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+  /* ── Emoji picker ── */
+  .emoji-popup {
+    position: absolute; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    z-index: 200; display: flex; flex-wrap: wrap; gap: 4px; max-width: 220px;
+    animation: popUp .15s ease;
+  }
+  .emoji-btn {
+    width: 32px; height: 32px; border: none; background: transparent; cursor: pointer;
+    border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center;
+    transition: background .1s;
+  }
+  .emoji-btn:hover { background: var(--surface2); }
+
+  /* ── New project form ── */
+  .new-proj-form {
+    background: var(--surface); border: 1px solid var(--gold-dim); border-radius: var(--radius);
+    padding: 18px; margin-bottom: 16px; animation: fadeUp .2s ease;
+  }
+  .new-proj-form h4 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .new-proj-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .new-proj-emoji-btn {
+    width: 44px; height: 38px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); font-size: 20px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0; position: relative;
+    transition: border-color .15s;
+  }
+  .new-proj-emoji-btn:hover { border-color: var(--gold-dim); }
+
   /* ── Settings panel ── */
-  #panel-settings { background:var(--bg); padding:28px; overflow-y:auto; }
   .settings-section { margin-bottom: 32px; }
   .settings-section h3 {
     font-size:14px; font-weight:600; color:var(--muted); text-transform:uppercase;
@@ -373,24 +462,36 @@
 
 <!-- ── Sidebar ── -->
 <aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">🐦</div>
-    <div class="logo-text">
-      <h1>Professor Pardal</h1>
-      <p>Assistente de estudos</p>
+  <div class="sidebar-top">
+    <div class="logo">
+      <div class="logo-icon">🐦</div>
+      <div class="logo-text">
+        <h1>Professor Pardal</h1>
+        <p>Assistente de estudos</p>
+      </div>
     </div>
+    <nav class="nav">
+      <button class="nav-btn active" data-panel="chat" onclick="showPanel('chat',this)">
+        <span class="icon">💬</span> Chat com Pardal
+      </button>
+      <button class="nav-btn" data-panel="docs" onclick="showPanel('docs',this)">
+        <span class="icon">📚</span> Materiais
+      </button>
+      <button class="nav-btn" data-panel="projects" onclick="showPanel('projects',this)">
+        <span class="icon">🗂️</span> Projetos
+      </button>
+      <button class="nav-btn" data-panel="settings" onclick="showPanel('settings',this)">
+        <span class="icon">⚙️</span> Configurações
+      </button>
+    </nav>
   </div>
-  <nav class="nav">
-    <button class="nav-btn active" onclick="showPanel('chat',this)">
-      <span class="icon">💬</span> Chat com Pardal
-    </button>
-    <button class="nav-btn" onclick="showPanel('docs',this)">
-      <span class="icon">📚</span> Materiais
-    </button>
-    <button class="nav-btn" onclick="showPanel('settings',this)">
-      <span class="icon">⚙️</span> Configurações
-    </button>
-  </nav>
+
+  <!-- Projects list in sidebar -->
+  <div class="sidebar-projects" id="sidebar-proj-list">
+    <div class="proj-section-label">Projetos</div>
+    <!-- filled by renderSidebarProjects() -->
+  </div>
+
   <div class="sidebar-footer">
     <div class="provider-badge">
       <div class="provider-dot off" id="status-dot"></div>
@@ -408,7 +509,11 @@
       <div class="chat-header-avatar">🐦</div>
       <div class="chat-header-info">
         <h2>Pardal</h2>
-        <p id="chat-subtitle">Assistente de estudos preciso com citação de fontes</p>
+        <p>Assistente de estudos preciso com citação de fontes</p>
+      </div>
+      <div class="chat-header-project" id="chat-proj-badge" onclick="showPanel('projects', document.querySelector('[data-panel=projects]'))">
+        <span id="chat-proj-emoji">📚</span>
+        <span id="chat-proj-name">Geral</span>
       </div>
     </div>
 
@@ -418,8 +523,8 @@
         <h2>Olá! Sou o Pardal.</h2>
         <p>Seu assistente de estudos preciso. Faço buscas nos seus materiais e cito exatamente a fonte, a página e o parágrafo de cada informação.</p>
         <div class="welcome-tips">
-          <div class="tip"><span class="tip-icon">📚</span> Adicione livros e PDFs em <strong>Materiais</strong></div>
-          <div class="tip"><span class="tip-icon">🔍</span> Use o botão de busca no campo de texto para escolher a fonte</div>
+          <div class="tip"><span class="tip-icon">🗂️</span> Organize estudos em <strong>Projetos</strong> — cada um com seus materiais</div>
+          <div class="tip"><span class="tip-icon">📚</span> Adicione PDFs, áudio ou imagens em <strong>Materiais</strong></div>
           <div class="tip"><span class="tip-icon">🖼️</span> Cole imagens com <kbd>Ctrl+V</kbd> ou arraste para o chat</div>
         </div>
       </div>
@@ -437,7 +542,6 @@
         </div>
       </div>
 
-      <!-- Mode popup (rendered above pill) -->
       <div class="mode-popup hidden" id="mode-popup">
         <button class="mode-popup-item active" data-mode="materials" onclick="setMode('materials')">
           <span class="item-icon">📚</span>
@@ -480,34 +584,82 @@
 
   <!-- Docs panel -->
   <div id="panel-docs" class="panel">
-    <div class="panel-header">
-      <h2>📚 Materiais de estudo</h2>
-      <p>Adicione PDFs, Word ou texto. O Pardal indexa e cita as fontes nas respostas.</p>
+    <div class="panel-scroll">
+      <div class="panel-header">
+        <h2>📚 Materiais de estudo</h2>
+        <p id="docs-proj-subtitle">Projeto: <strong id="docs-proj-name">Geral</strong> — adicione seus materiais de estudo</p>
+      </div>
+
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <div class="icon">📂</div>
+        <p><strong>Clique para selecionar</strong> ou arraste arquivos aqui</p>
+        <div class="types-row">
+          <span class="type-badge">PDF</span>
+          <span class="type-badge">DOCX</span>
+          <span class="type-badge">TXT</span>
+          <span class="type-badge">MD</span>
+          <span class="type-badge audio">MP3</span>
+          <span class="type-badge audio">WAV</span>
+          <span class="type-badge audio">M4A</span>
+          <span class="type-badge audio">OGG</span>
+          <span class="type-badge image">JPG</span>
+          <span class="type-badge image">PNG</span>
+          <span class="type-badge image">WEBP</span>
+        </div>
+        <p style="margin-top:8px;font-size:12px;color:var(--muted)">Áudio → transcrição automática · Imagens → análise por IA</p>
+        <input type="file" id="file-input"
+          accept=".pdf,.docx,.txt,.md,.mp3,.wav,.ogg,.m4a,.flac,.webm,.opus,.mp4,.jpg,.jpeg,.png,.gif,.webp"
+          multiple onchange="uploadFiles(this.files)">
+      </div>
+
+      <div class="doc-list" id="doc-list">
+        <p style="color:var(--muted);font-size:14px;">Nenhum material adicionado ainda.</p>
+      </div>
     </div>
-    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-      <div class="icon">📂</div>
-      <p><strong>Clique para selecionar</strong> ou arraste arquivos aqui</p>
-      <p style="margin-top:6px;font-size:12px;">PDF · DOCX · TXT · MD</p>
-      <input type="file" id="file-input" accept=".pdf,.docx,.txt,.md" multiple onchange="uploadFiles(this.files)">
-    </div>
-    <div class="doc-list" id="doc-list">
-      <p style="color:var(--muted);font-size:14px;">Nenhum material adicionado ainda.</p>
+  </div>
+
+  <!-- Projects panel -->
+  <div id="panel-projects" class="panel">
+    <div class="panel-scroll">
+      <div class="proj-header-row">
+        <h2>🗂️ Projetos</h2>
+        <button class="btn-primary" onclick="toggleNewProjForm()">+ Novo projeto</button>
+      </div>
+
+      <div class="new-proj-form hidden" id="new-proj-form">
+        <h4>Criar novo projeto</h4>
+        <div class="new-proj-row">
+          <div style="position:relative">
+            <button class="new-proj-emoji-btn" id="new-proj-emoji-btn" onclick="toggleEmojiPicker(event,'new-proj')">📁</button>
+          </div>
+          <div class="form-group" style="flex:2;min-width:180px">
+            <label>Nome do projeto</label>
+            <input type="text" id="new-proj-name" placeholder="Ex: Direito Constitucional..." onkeydown="if(event.key==='Enter')createProject()">
+          </div>
+          <button class="btn-primary" onclick="createProject()">Criar</button>
+          <button class="btn-outline" onclick="toggleNewProjForm(false)">Cancelar</button>
+        </div>
+      </div>
+
+      <div id="proj-list"><!-- filled by renderProjects() --></div>
     </div>
   </div>
 
   <!-- Settings panel -->
   <div id="panel-settings" class="panel">
-    <div class="panel-header">
-      <h2>⚙️ Configurações</h2>
-      <p>Configure as chaves de API dos provedores de IA.</p>
-    </div>
-    <div class="settings-section">
-      <h3>Provedores de IA</h3>
-      <div id="providers-list"></div>
-    </div>
-    <div class="settings-section">
-      <h3>Conversa</h3>
-      <button class="btn-outline" onclick="clearChat()">🗑️ Limpar conversa atual</button>
+    <div class="panel-scroll">
+      <div class="panel-header">
+        <h2>⚙️ Configurações</h2>
+        <p>Configure as chaves de API dos provedores de IA.</p>
+      </div>
+      <div class="settings-section">
+        <h3>Provedores de IA</h3>
+        <div id="providers-list"></div>
+      </div>
+      <div class="settings-section">
+        <h3>Conversa</h3>
+        <button class="btn-outline" onclick="clearChat()">🗑️ Limpar conversa atual</button>
+      </div>
     </div>
   </div>
 
@@ -520,6 +672,11 @@ let pendingImages = [];
 let history = [];
 let isLoading = false;
 let config = {};
+let projects = [];
+let activeProjectId = 'default';
+let newProjEmoji = '📁';
+let _docsTimer = null;
+let _emojiPopup = null;
 
 const MODES = {
   materials: { icon: '📚', label: 'Materiais' },
@@ -528,13 +685,15 @@ const MODES = {
   none:      { icon: '🤖', label: 'Modelo' },
 };
 
+const EMOJIS = ['📁','📚','📝','🔬','⚖️','🎓','🏛️','🧬','💻','🎨','📊','🗺️','🌍','📐','🔭','🎵','🏥','✝️','🙏','🕊️'];
+
 // ── Init ──
 (async function init() {
-  await loadConfig();
-  await loadDocs();
+  await Promise.all([loadConfig(), loadProjects()]);
   setupInputHandlers();
 })();
 
+// ── Config ──
 async function loadConfig() {
   try {
     const r = await fetch('/api/config');
@@ -562,9 +721,202 @@ function showPanel(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'docs') loadDocs();
+  if (btn) btn.classList.add('active');
+  // Sync active nav btn by data-panel
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.dataset.panel === name) b.classList.add('active');
+  });
+  if (name === 'docs')     { loadDocs(); updateDocsHeader(); }
   if (name === 'settings') loadConfig();
+  if (name === 'projects') renderProjects();
+}
+
+// ── Projects ──
+async function loadProjects() {
+  try {
+    const r = await fetch('/api/projects');
+    const data = await r.json();
+    projects = data.projects;
+    activeProjectId = data.active;
+    renderSidebarProjects();
+    updateChatProjectBadge();
+    updateDocsHeader();
+  } catch(e) { console.error(e); }
+}
+
+function renderSidebarProjects() {
+  const c = document.getElementById('sidebar-proj-list');
+  c.innerHTML = '<div class="proj-section-label">Projetos</div>';
+  for (const p of projects) {
+    const btn = document.createElement('button');
+    btn.className = 'proj-sidebar-item' + (p.id === activeProjectId ? ' active' : '');
+    btn.innerHTML = `<span class="proj-emoji">${p.emoji}</span><span class="proj-name">${escHtml(p.name)}</span><span class="proj-count">${p.doc_count}</span>`;
+    btn.onclick = () => activateProject(p.id);
+    c.appendChild(btn);
+  }
+}
+
+function updateChatProjectBadge() {
+  const proj = projects.find(p => p.id === activeProjectId) || { emoji:'📚', name:'Geral' };
+  document.getElementById('chat-proj-emoji').textContent = proj.emoji;
+  document.getElementById('chat-proj-name').textContent  = proj.name;
+}
+
+function updateDocsHeader() {
+  const proj = projects.find(p => p.id === activeProjectId) || { name:'Geral' };
+  const el = document.getElementById('docs-proj-name');
+  if (el) el.textContent = proj.name;
+}
+
+function renderProjects() {
+  const c = document.getElementById('proj-list');
+  if (!c) return;
+  if (!projects.length) {
+    c.innerHTML = '<p style="color:var(--muted)">Nenhum projeto encontrado.</p>';
+    return;
+  }
+  c.innerHTML = '';
+  for (const p of projects) {
+    const isActive = p.id === activeProjectId;
+    const card = document.createElement('div');
+    card.className = 'proj-card' + (isActive ? ' active' : '');
+    card.innerHTML = `
+      <div class="proj-card-emoji" data-proj-id="${p.id}" onclick="toggleEmojiPicker(event,'edit',${JSON.stringify(p.id)})">${p.emoji}</div>
+      <div class="proj-card-info">
+        <div class="proj-card-name">
+          <span class="proj-edit-name" data-id="${p.id}">${escHtml(p.name)}</span>
+          ${isActive ? '<span class="proj-active-badge">Ativo</span>' : ''}
+        </div>
+        <div class="proj-card-meta">${p.doc_count} material${p.doc_count !== 1 ? 'is' : ''}</div>
+      </div>
+      <div class="proj-card-actions">
+        ${!isActive ? `<button class="btn-outline" onclick="activateProject('${p.id}')">Ativar</button>` : ''}
+        <button class="btn-outline" onclick="startRename('${p.id}')">Renomear</button>
+        ${p.id !== 'default'
+          ? `<button class="btn-outline" style="color:var(--danger);border-color:var(--danger)" onclick="deleteProject('${p.id}')">Excluir</button>`
+          : ''}
+      </div>`;
+    c.appendChild(card);
+  }
+}
+
+async function activateProject(id) {
+  if (id === activeProjectId) return;
+  const r = await fetch(`/api/projects/${id}/activate`, { method: 'POST' });
+  if (!r.ok) { toast('Erro ao ativar projeto.', 'error'); return; }
+  await loadProjects();
+  renderProjects();
+  toast(`Projeto ativado.`, 'success');
+  // Reload docs if that panel is visible
+  if (document.getElementById('panel-docs').classList.contains('active')) loadDocs();
+}
+
+function toggleNewProjForm(show) {
+  const form = document.getElementById('new-proj-form');
+  const visible = show !== undefined ? show : form.classList.contains('hidden');
+  form.classList.toggle('hidden', !visible);
+  if (visible) {
+    document.getElementById('new-proj-name').focus();
+    newProjEmoji = '📁';
+    document.getElementById('new-proj-emoji-btn').textContent = newProjEmoji;
+  }
+}
+
+async function createProject() {
+  const nameEl = document.getElementById('new-proj-name');
+  const name = nameEl.value.trim();
+  if (!name) { toast('Informe um nome para o projeto.', 'error'); return; }
+  const r = await fetch('/api/projects', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, emoji: newProjEmoji }),
+  });
+  if (!r.ok) { const e = await r.json(); toast(e.detail || 'Erro ao criar.', 'error'); return; }
+  nameEl.value = '';
+  toggleNewProjForm(false);
+  await loadProjects();
+  renderProjects();
+  toast(`Projeto "${name}" criado!`, 'success');
+}
+
+function startRename(id) {
+  const span = document.querySelector(`.proj-edit-name[data-id="${id}"]`);
+  if (!span) return;
+  const current = projects.find(p => p.id === id)?.name || '';
+  span.outerHTML = `<input class="proj-rename-input" data-id="${id}" value="${escHtml(current)}"
+    style="background:var(--bg);border:1px solid var(--gold-dim);border-radius:6px;color:var(--text);
+    font-family:var(--font);font-size:14px;font-weight:600;padding:3px 8px;outline:none;width:200px"
+    onkeydown="if(event.key==='Enter')finishRename('${id}');if(event.key==='Escape')renderProjects()"
+    onblur="finishRename('${id}')" autofocus>`;
+}
+
+async function finishRename(id) {
+  const input = document.querySelector(`.proj-rename-input[data-id="${id}"]`);
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) { renderProjects(); return; }
+  const r = await fetch(`/api/projects/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!r.ok) { toast('Erro ao renomear.', 'error'); }
+  await loadProjects();
+  renderProjects();
+}
+
+async function deleteProject(id) {
+  const proj = projects.find(p => p.id === id);
+  if (!confirm(`Excluir o projeto "${proj?.name}"?\nTodos os materiais serão removidos permanentemente.`)) return;
+  const r = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+  if (!r.ok) { const e = await r.json(); toast(e.detail || 'Erro ao excluir.', 'error'); return; }
+  await loadProjects();
+  renderProjects();
+  toast('Projeto excluído.', 'success');
+}
+
+// ── Emoji picker ──
+function toggleEmojiPicker(e, context, projId) {
+  e.stopPropagation();
+  closeEmojiPicker();
+  const btn = e.currentTarget;
+  const popup = document.createElement('div');
+  popup.className = 'emoji-popup';
+  popup.id = 'emoji-popup';
+  popup.style.position = 'fixed';
+  const rect = btn.getBoundingClientRect();
+  popup.style.top  = (rect.bottom + 4) + 'px';
+  popup.style.left = rect.left + 'px';
+
+  EMOJIS.forEach(em => {
+    const b = document.createElement('button');
+    b.className = 'emoji-btn'; b.textContent = em;
+    b.onclick = (ev) => {
+      ev.stopPropagation();
+      if (context === 'new-proj') {
+        newProjEmoji = em;
+        document.getElementById('new-proj-emoji-btn').textContent = em;
+      } else if (context === 'edit' && projId) {
+        updateProjectEmoji(projId, em);
+      }
+      closeEmojiPicker();
+    };
+    popup.appendChild(b);
+  });
+  document.body.appendChild(popup);
+  _emojiPopup = popup;
+}
+
+function closeEmojiPicker() {
+  if (_emojiPopup) { _emojiPopup.remove(); _emojiPopup = null; }
+}
+
+async function updateProjectEmoji(projId, emoji) {
+  const proj = projects.find(p => p.id === projId);
+  if (!proj) return;
+  const r = await fetch(`/api/projects/${projId}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: proj.name, emoji }),
+  });
+  if (r.ok) { await loadProjects(); renderProjects(); }
 }
 
 // ── Mode popup ──
@@ -579,26 +931,20 @@ function toggleModePopup(e) {
 
 function setMode(mode) {
   searchMode = mode;
-
-  // Update pill
   const m = MODES[mode];
   document.getElementById('pill-icon').textContent  = m.icon;
   document.getElementById('pill-label').textContent = m.label;
-
-  // Update popup items
   document.querySelectorAll('.mode-popup-item').forEach(el => {
     el.classList.toggle('active', el.dataset.mode === mode);
   });
-
-  // Close popup
   document.getElementById('mode-popup').classList.add('hidden');
   document.getElementById('mode-pill').classList.remove('open');
 }
 
-// Close popup when clicking outside
 document.addEventListener('click', () => {
   document.getElementById('mode-popup').classList.add('hidden');
   document.getElementById('mode-pill').classList.remove('open');
+  closeEmojiPicker();
 });
 
 // ── Input handlers ──
@@ -632,8 +978,8 @@ function setupInputHandlers() {
   });
 
   const uz = document.getElementById('upload-zone');
-  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag'); });
-  uz.addEventListener('dragleave', () => uz.classList.remove('drag'));
+  uz.addEventListener('dragover',  e => { e.preventDefault(); uz.classList.add('drag'); });
+  uz.addEventListener('dragleave', ()  => uz.classList.remove('drag'));
   uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag'); uploadFiles(e.dataTransfer.files); });
 }
 
@@ -668,7 +1014,7 @@ async function sendMessage() {
   const text = textarea.value.trim();
   if (!text && pendingImages.length === 0) return;
 
-  const images = pendingImages.map(i => i.base64);
+  const images   = pendingImages.map(i => i.base64);
   const userText = text || '(imagem)';
 
   textarea.value = '';
@@ -690,9 +1036,7 @@ async function sendMessage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        message: userText,
-        images,
-        search_mode: searchMode,
+        message: userText, images, search_mode: searchMode,
         history: history.slice(0, -1),
         provider: config.default_provider || null,
       }),
@@ -711,7 +1055,7 @@ async function sendMessage() {
 
   } catch(e) {
     typingEl.remove();
-    addMessage('assistant', `❌ **Erro:** ${e.message}`, [], []);
+    addMessage('assistant', `**Erro:** ${e.message}`, [], []);
   } finally {
     isLoading = false;
     document.getElementById('send-btn').disabled = false;
@@ -719,8 +1063,8 @@ async function sendMessage() {
 }
 
 function addMessage(role, text, imgUrls = [], citations = []) {
-  const c    = document.getElementById('messages');
-  const div  = document.createElement('div');
+  const c   = document.getElementById('messages');
+  const div = document.createElement('div');
   div.className = `msg ${role}`;
   const time = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
 
@@ -730,7 +1074,7 @@ function addMessage(role, text, imgUrls = [], citations = []) {
 
   const citeHtml = citations.length
     ? '<div class="citations">' + citations.map(c =>
-        `<div class="citation">📚 <em>${c.source}</em> — p.${c.page}, §${c.paragraph}</div>`
+        `<div class="citation">📚 <em>${escHtml(c.source)}</em> — p.${c.page}, §${c.paragraph}</div>`
       ).join('') + '</div>'
     : '';
 
@@ -763,65 +1107,38 @@ function addTyping() {
 }
 
 function renderMarkdown(text) {
-  // 1. Escape HTML
   let t = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  // 2. Protect fenced code blocks from inline processing
   const saved = [];
   t = t.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, code) => {
     saved.push(`<pre><code>${code.trimEnd()}</code></pre>`);
     return `\x00${saved.length - 1}\x00`;
   });
 
-  // 3. Inline formatting
   t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
   t = t.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   t = t.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
 
-  // 4. Line-by-line structure
   const lines = t.split('\n');
   const out = [];
   let inList = false;
   let para = [];
 
-  const flushPara = () => {
-    if (para.length) { out.push(`<p>${para.join('<br>')}</p>`); para = []; }
-  };
-  const closeList = () => {
-    if (inList) { out.push('</ul>'); inList = false; }
-  };
+  const flushPara = () => { if (para.length) { out.push(`<p>${para.join('<br>')}</p>`); para = []; } };
+  const closeList = () => { if (inList) { out.push('</ul>'); inList = false; } };
 
   for (const line of lines) {
-    // Saved code block placeholder on its own line
-    if (/^\x00\d+\x00$/.test(line)) {
-      flushPara(); closeList();
-      out.push(line);
-      continue;
-    }
-    // Headers
+    if (/^\x00\d+\x00$/.test(line)) { flushPara(); closeList(); out.push(line); continue; }
     const hm = line.match(/^#{1,3} (.+)/);
-    if (hm) {
-      flushPara(); closeList();
-      out.push(`<p><strong>${hm[1]}</strong></p>`);
-      continue;
-    }
-    // List items (- or * or 1.)
+    if (hm) { flushPara(); closeList(); out.push(`<p><strong>${hm[1]}</strong></p>`); continue; }
     const lm = line.match(/^(?:[-*]|\d+\.) (.+)/);
-    if (lm) {
-      flushPara();
-      if (!inList) { out.push('<ul>'); inList = true; }
-      out.push(`<li>${lm[1]}</li>`);
-      continue;
-    }
-    // Blank line → flush
+    if (lm) { flushPara(); if (!inList) { out.push('<ul>'); inList = true; } out.push(`<li>${lm[1]}</li>`); continue; }
     if (!line.trim()) { flushPara(); closeList(); continue; }
-    // Normal text
     closeList();
     para.push(line);
   }
   flushPara(); closeList();
 
-  // 5. Restore code blocks
   let html = out.join('\n');
   saved.forEach((block, i) => { html = html.replace(`\x00${i}\x00`, block); });
   return html;
@@ -839,18 +1156,17 @@ function clearChat() {
 }
 
 // ── Documents ──
-let _docsTimer = null;
-
 async function loadDocs() {
   try {
     const r    = await fetch('/api/documents');
     const data = await r.json();
     renderDocs(data.documents);
-    // Auto-refresh while any document is still being indexed
     clearTimeout(_docsTimer);
     if ((data.documents || []).some(d => !d.indexed)) {
       _docsTimer = setTimeout(loadDocs, 2500);
     }
+    // Update project info in sidebar after doc count may have changed
+    await loadProjects();
   } catch(e) { console.error(e); }
 }
 
@@ -860,26 +1176,37 @@ function renderDocs(docs) {
     list.innerHTML = '<p style="color:var(--muted);font-size:14px;">Nenhum material adicionado ainda.</p>';
     return;
   }
-  const icons = { PDF:'📄', DOCX:'📝', TXT:'📋', MD:'📋' };
   list.innerHTML = docs.map(doc => {
-    const ext  = doc.name.split('.').pop().toUpperCase();
+    const safeName = escHtml(doc.name);
+    const ext = doc.name.split('.').pop().toUpperCase();
     const size = doc.size > 1048576
       ? (doc.size/1048576).toFixed(1) + ' MB'
       : (doc.size/1024).toFixed(0) + ' KB';
-    const safeName = doc.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    const badge = doc.indexed
-      ? '<div class="doc-badge indexed">✓ Indexado</div>'
-      : doc.indexing
-        ? '<div class="doc-badge pending">⏳ Indexando...</div>'
-        : '<div class="doc-badge pending">⏳ Na fila...</div>';
-    const reindexBtn = !doc.indexed && !doc.indexing
+
+    const isAudio = doc.name.startsWith('[audio]');
+    const isImage = doc.name.startsWith('[imagem]');
+    const icon = isAudio ? '🎵' : isImage ? '🖼️' : { PDF:'📄', DOCX:'📝', TXT:'📋', MD:'📋' }[ext] || '📄';
+
+    let badge;
+    if (doc.indexed) {
+      badge = '<div class="doc-badge indexed">✓ Indexado</div>';
+    } else if (doc.indexing) {
+      if (isAudio) badge = '<div class="doc-badge audio-proc">🎵 Transcrevendo...</div>';
+      else if (isImage) badge = '<div class="doc-badge img-proc">🖼️ Analisando...</div>';
+      else badge = '<div class="doc-badge pending">⏳ Indexando...</div>';
+    } else {
+      badge = '<div class="doc-badge pending">⏳ Na fila...</div>';
+    }
+
+    const reindexBtn = (!doc.indexed && !doc.indexing)
       ? `<button class="doc-btn reindex-btn" data-name="${safeName}">🔄</button>`
       : '';
+
     return `
       <div class="doc-item">
-        <div class="doc-icon">${icons[ext] || '📄'}</div>
+        <div class="doc-icon">${icon}</div>
         <div class="doc-info">
-          <strong title="${safeName}">${doc.name}</strong>
+          <strong title="${safeName}">${safeName}</strong>
           <span>${ext} · ${size}</span>
         </div>
         ${badge}
@@ -890,7 +1217,6 @@ function renderDocs(docs) {
       </div>`;
   }).join('');
 
-  // Attach handlers via data attributes — safe for any filename
   list.querySelectorAll('.reindex-btn').forEach(btn =>
     btn.addEventListener('click', () => reindex(btn.dataset.name))
   );
@@ -899,16 +1225,41 @@ function renderDocs(docs) {
   );
 }
 
+const AUDIO_EXTS = new Set(['mp3','wav','ogg','m4a','flac','webm','opus','mp4']);
+const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp']);
+
 async function uploadFiles(files) {
   for (const file of files) {
     const ext = file.name.split('.').pop().toLowerCase();
-    if (!['pdf','docx','txt','md'].includes(ext)) { toast(`Tipo não suportado: .${ext}`, 'error'); continue; }
+    const isDoc   = ['pdf','docx','txt','md'].includes(ext);
+    const isAudio = AUDIO_EXTS.has(ext);
+    const isImage = IMAGE_EXTS.has(ext);
+
+    if (!isDoc && !isAudio && !isImage) {
+      toast(`Tipo não suportado: .${ext}`, 'error');
+      continue;
+    }
+
+    let label;
+    if (isAudio) label = `"${file.name}" — transcrevendo áudio...`;
+    else if (isImage) label = `"${file.name}" — analisando imagem com IA...`;
+    else label = `"${file.name}" carregado e indexando...`;
+
+    toast(`${label}`, isAudio || isImage ? '' : 'success');
+
     const fd = new FormData();
     fd.append('file', file);
     try {
       const r = await fetch('/api/documents/upload', { method:'POST', body:fd });
-      if (!r.ok) { const e = await r.json(); toast(`Erro: ${e.detail}`, 'error'); }
-      else { toast(`✓ "${file.name}" carregado e indexando...`, 'success'); setTimeout(loadDocs, 1500); }
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}));
+        toast(`Erro: ${e.detail || r.status}`, 'error');
+      } else {
+        const data = await r.json();
+        if (data.type === 'audio') toast(`Transcrição de "${file.name}" concluída!`, 'success');
+        else if (data.type === 'image') toast(`Análise de "${file.name}" concluída!`, 'success');
+        setTimeout(loadDocs, 500);
+      }
     } catch(e) { toast(`Erro: ${e.message}`, 'error'); }
   }
 }
@@ -929,7 +1280,6 @@ function renderProviders() {
   const list = document.getElementById('providers-list');
   if (!list) return;
   const def = config.default_provider || '';
-
   list.innerHTML = Object.entries(config.providers || {}).map(([id, meta]) => {
     const isDefault = id === def;
     return `
@@ -973,8 +1323,11 @@ async function saveKey(id) {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ provider: id, api_key: key, model }),
   });
-  if (r.ok) { toast('✓ Chave salva!', 'success'); document.getElementById('key-' + id).value = ''; await loadConfig(); }
-  else { toast('Erro ao salvar.', 'error'); }
+  if (r.ok) {
+    toast('Chave salva!', 'success');
+    document.getElementById('key-' + id).value = '';
+    await loadConfig();
+  } else { toast('Erro ao salvar.', 'error'); }
 }
 
 async function setDefault(id) {
@@ -982,10 +1335,14 @@ async function setDefault(id) {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ provider: id }),
   });
-  if (r.ok) { toast(`✓ ${config.providers[id]?.name} definido como padrão.`, 'success'); await loadConfig(); }
+  if (r.ok) { toast(`${config.providers[id]?.name} definido como padrão.`, 'success'); await loadConfig(); }
 }
 
-// ── Toast ──
+// ── Utils ──
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function toast(msg, type = '') {
   const el = document.createElement('div');
   el.className = 'toast ' + type;

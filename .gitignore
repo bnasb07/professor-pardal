@@ -13,18 +13,22 @@ build_tmp/
 # Banco de dados vetorial (gerado automaticamente)
 .pardal_db/
 
-# Materiais de estudo (conteúdo pessoal do usuário)
+# Dados do usuário — projetos e materiais
+projects/
+projects.json
 study_materials/
 
 # Configuração com chaves de API
 config.json
 
-# Arquivos temporários
+# Arquivos temporários e logs
 *.tmp
 *.log
 _launcher_stub.py
+server_out.txt
+server_err.txt
 
-# Ícone gerado (pode ser regenerado com gerar_icone.py)
+# Ícone gerado (regenerar com gerar_icone.py)
 icon.ico
 
 # Executável compilado (rebuildar com criar_launcher.py)

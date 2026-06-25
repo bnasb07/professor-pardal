@@ -34,7 +34,7 @@ if errorlevel 1 (
     echo Instalando dependencias - aguarde...
     %PIP% install fastapi uvicorn[standard] python-multipart pdfplumber python-docx ^
         aiofiles httpx Pillow duckduckgo-search pydantic anthropic openai ^
-        google-generativeai chromadb sentence-transformers
+        google-generativeai chromadb sentence-transformers "PySide6>=6.7.0"
     if errorlevel 1 ( echo ERRO na instalacao. & pause & exit /b )
 )
 
@@ -51,7 +51,7 @@ echo Criando atalho na area de trabalho...
 
 > "%TEMP%\pardal_atalho.vbs" echo Set WS = CreateObject("WScript.Shell")
 >> "%TEMP%\pardal_atalho.vbs" echo Set SC = WS.CreateShortcut("%DESKTOP%\Professor Pardal.lnk")
->> "%TEMP%\pardal_atalho.vbs" echo SC.TargetPath = "%APP_DIR%\iniciar.bat"
+>> "%TEMP%\pardal_atalho.vbs" echo SC.TargetPath = "%APP_DIR%\ProfessorPardal.exe"
 >> "%TEMP%\pardal_atalho.vbs" echo SC.WorkingDirectory = "%APP_DIR%"
 >> "%TEMP%\pardal_atalho.vbs" echo SC.IconLocation = "%ICON%"
 >> "%TEMP%\pardal_atalho.vbs" echo SC.Description = "Professor Pardal - Assistente de Estudos"
@@ -65,7 +65,7 @@ if not exist "%STARTMENU%\Professor Pardal" mkdir "%STARTMENU%\Professor Pardal"
 
 > "%TEMP%\pardal_menu.vbs" echo Set WS = CreateObject("WScript.Shell")
 >> "%TEMP%\pardal_menu.vbs" echo Set SC = WS.CreateShortcut("%STARTMENU%\Professor Pardal\Professor Pardal.lnk")
->> "%TEMP%\pardal_menu.vbs" echo SC.TargetPath = "%APP_DIR%\iniciar.bat"
+>> "%TEMP%\pardal_menu.vbs" echo SC.TargetPath = "%APP_DIR%\ProfessorPardal.exe"
 >> "%TEMP%\pardal_menu.vbs" echo SC.WorkingDirectory = "%APP_DIR%"
 >> "%TEMP%\pardal_menu.vbs" echo SC.IconLocation = "%ICON%"
 >> "%TEMP%\pardal_menu.vbs" echo SC.Description = "Professor Pardal - Assistente de Estudos"
@@ -96,6 +96,6 @@ echo   Para desinstalar: Menu Iniciar ^> Professor Pardal ^> Desinstalar
 echo.
 
 set /p OPEN="Abrir o Professor Pardal agora? (S/N): "
-if /i "%OPEN%"=="S" start "" "%APP_DIR%\iniciar.bat"
+if /i "%OPEN%"=="S" start "" "%APP_DIR%\ProfessorPardal.exe"
 
 pause

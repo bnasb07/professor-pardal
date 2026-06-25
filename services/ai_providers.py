@@ -40,6 +40,35 @@ class AIProviderService:
             }
         return result
 
+    async def describe_image(
+        self,
+        provider: str,
+        api_key: str,
+        model: Optional[str],
+        image_base64: str,
+        filename: str,
+    ) -> str:
+        """Use vision AI to produce a rich text description of an image for indexing."""
+        prompt = (
+            f"Você está analisando a imagem '{filename}' para indexação numa base de conhecimento de estudos.\n"
+            "Descreva em detalhes:\n"
+            "1. Conteúdo principal (objetos, pessoas, cenário)\n"
+            "2. Todos os textos visíveis (transcreva integralmente)\n"
+            "3. Diagramas, gráficos ou tabelas (estrutura e dados)\n"
+            "4. Cores, composição, estilo visual quando relevante\n"
+            "5. Conceitos ou informações representadas\n\n"
+            "Organize a resposta em Markdown com seções claras. Seja preciso e completo."
+        )
+        msgs = [{"role": "user", "content": prompt}]
+        return await self.chat(
+            provider=provider,
+            api_key=api_key,
+            model=model,
+            system="Você é um assistente especializado em análise de imagens para fins educacionais.",
+            messages=msgs,
+            images=[image_base64],
+        )
+
     async def chat(
         self,
         provider: str,

@@ -6,10 +6,10 @@ from services.document_parser import DocumentParser
 
 
 class RAGService:
-    def __init__(self, materials_dir: Path):
+    def __init__(self, materials_dir: Path, db_dir: Path = None):
         self.materials_dir = materials_dir
-        self.db_dir = materials_dir.parent / ".pardal_db"
-        self.db_dir.mkdir(exist_ok=True)
+        self.db_dir = db_dir if db_dir is not None else (materials_dir.parent / ".pardal_db")
+        self.db_dir.mkdir(parents=True, exist_ok=True)
         self.parser = DocumentParser()
         self._model = None
         self._client = None

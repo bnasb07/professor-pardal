@@ -1,7 +1,9 @@
 import asyncio
+import base64
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Dict, List, Optional
 
 import uvicorn
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -9,23 +11,36 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Dict, List, Optional
 
 from services.ai_providers import AIProviderService, PROVIDERS_META
+from services.project_manager import ProjectManager
 from services.rag import RAGService
+from services.transcription import TranscriptionService, AUDIO_EXT
 from services.web_search import WebSearchService
 
-BASE_DIR = Path(__file__).parent
-STUDY_DIR = BASE_DIR / "study_materials"
+BASE_DIR   = Path(__file__).parent
 CONFIG_FILE = BASE_DIR / "config.json"
-STATIC_DIR = BASE_DIR / "static"
-ALLOWED_EXT = {".pdf", ".docx", ".txt", ".md"}
+STATIC_DIR  = BASE_DIR / "static"
 
-STUDY_DIR.mkdir(exist_ok=True)
+ALLOWED_DOC_EXT   = {".pdf", ".docx", ".txt", ".md"}
+ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+ALLOWED_EXT       = ALLOWED_DOC_EXT | AUDIO_EXT | ALLOWED_IMAGE_EXT
 
-rag = RAGService(STUDY_DIR)
-ai_svc = AIProviderService()
-search_svc = WebSearchService()
+proj_mgr    = ProjectManager(BASE_DIR)
+ai_svc      = AIProviderService()
+search_svc  = WebSearchService()
+transc_svc  = TranscriptionService()
+_rag_cache: Dict[str, RAGService] = {}
+
+
+def _get_rag(project_id: str = None) -> RAGService:
+    pid = project_id or proj_mgr.get_active_id()
+    if pid not in _rag_cache:
+        _rag_cache[pid] = RAGService(
+            proj_mgr.materials_dir(pid),
+            proj_mgr.db_dir(pid),
+        )
+    return _rag_cache[pid]
 
 
 def load_cfg() -> dict:
@@ -40,9 +55,10 @@ def save_cfg(cfg: dict):
         json.dump(cfg, f, indent=2, ensure_ascii=False)
 
 
-def _safe_path(filename: str) -> Path:
-    resolved = (STUDY_DIR / filename).resolve()
-    if not resolved.is_relative_to(STUDY_DIR.resolve()):
+def _safe_path(filename: str, project_id: str = None) -> Path:
+    mdir = proj_mgr.materials_dir(project_id)
+    resolved = (mdir / filename).resolve()
+    if not resolved.is_relative_to(mdir.resolve()):
         raise HTTPException(400, "Nome de arquivo inválido")
     return resolved
 
@@ -53,14 +69,20 @@ async def lifespan(_app: FastAPI):
     for prov, data in cfg.get("providers", {}).items():
         if data.get("api_key"):
             ai_svc.update_provider(prov, data["api_key"], data.get("model"))
-    for f in STUDY_DIR.iterdir():
-        if f.is_file() and f.suffix.lower() in ALLOWED_EXT and not rag.is_indexed(f.name):
+    # Index active project documents on startup
+    active_id = proj_mgr.get_active_id()
+    mdir = proj_mgr.materials_dir(active_id)
+    rag  = _get_rag(active_id)
+    for f in mdir.iterdir():
+        if f.is_file() and f.suffix.lower() in ALLOWED_DOC_EXT and not rag.is_indexed(f.name):
             asyncio.create_task(rag.index_document(f))
     yield
 
 
 app = FastAPI(title="Professor Pardal", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+)
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -68,7 +90,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 class ChatRequest(BaseModel):
     message: str
     images: Optional[List[str]] = []
-    search_mode: str = "materials"   # internet | materials | both
+    search_mode: str = "materials"
     history: Optional[List[Dict]] = []
     provider: Optional[str] = None
     model: Optional[str] = None
@@ -82,6 +104,16 @@ class KeyUpdate(BaseModel):
 
 class DefaultProvider(BaseModel):
     provider: str
+
+
+class ProjectCreate(BaseModel):
+    name: str
+    emoji: Optional[str] = "📁"
+
+
+class ProjectRename(BaseModel):
+    name: str
+    emoji: Optional[str] = None
 
 
 # ── Static / root ─────────────────────────────────────────────────────────────
@@ -137,50 +169,197 @@ async def set_default(body: DefaultProvider):
     return {"status": "ok"}
 
 
+# ── Projects endpoints ────────────────────────────────────────────────────────
+
+@app.get("/api/projects")
+async def list_projects():
+    projects = proj_mgr.list_projects()
+    active_id = proj_mgr.get_active_id()
+    result = []
+    for p in projects:
+        result.append({
+            **p,
+            "active": p["id"] == active_id,
+            "doc_count": proj_mgr.doc_count(p["id"], ALLOWED_DOC_EXT),
+        })
+    return {"projects": result, "active": active_id}
+
+
+@app.post("/api/projects")
+async def create_project(body: ProjectCreate):
+    if not body.name.strip():
+        raise HTTPException(400, "Nome do projeto é obrigatório.")
+    project = proj_mgr.create(body.name, body.emoji or "📁")
+    return project
+
+
+@app.post("/api/projects/{project_id}/activate")
+async def activate_project(project_id: str):
+    try:
+        proj_mgr.set_active(project_id)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+    # Warm up RAG for the newly active project
+    mdir = proj_mgr.materials_dir(project_id)
+    rag  = _get_rag(project_id)
+    for f in mdir.iterdir():
+        if f.is_file() and f.suffix.lower() in ALLOWED_DOC_EXT and not rag.is_indexed(f.name):
+            asyncio.create_task(rag.index_document(f))
+    return {"status": "ok", "active": project_id}
+
+
+@app.patch("/api/projects/{project_id}")
+async def rename_project(project_id: str, body: ProjectRename):
+    if not body.name.strip():
+        raise HTTPException(400, "Nome não pode ser vazio.")
+    proj_mgr.rename(project_id, body.name, body.emoji)
+    return {"status": "ok"}
+
+
+@app.delete("/api/projects/{project_id}")
+async def delete_project(project_id: str):
+    try:
+        proj_mgr.delete(project_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    # Clean cached RAG instance
+    _rag_cache.pop(project_id, None)
+    return {"status": "ok"}
+
+
 # ── Documents endpoints ────────────────────────────────────────────────────────
 
 @app.get("/api/documents")
 async def list_docs():
+    active_id = proj_mgr.get_active_id()
+    mdir = proj_mgr.materials_dir(active_id)
+    rag  = _get_rag(active_id)
     docs = []
-    for f in sorted(STUDY_DIR.iterdir()):
-        if f.is_file() and f.suffix.lower() in ALLOWED_EXT:
+    for f in sorted(mdir.iterdir()):
+        if f.is_file() and f.suffix.lower() in ALLOWED_DOC_EXT:
             docs.append({
                 "name": f.name,
                 "size": f.stat().st_size,
                 "indexed": rag.is_indexed(f.name),
                 "indexing": rag.is_indexing(f.name),
             })
-    return {"documents": docs}
+    return {"documents": docs, "project": proj_mgr.get_active()}
 
 
 @app.post("/api/documents/upload")
 async def upload_doc(file: UploadFile = File(...)):
     suffix = Path(file.filename).suffix.lower()
-    if suffix not in ALLOWED_EXT:
-        raise HTTPException(400, f"Tipo não suportado. Use: {', '.join(ALLOWED_EXT)}")
-    dest = STUDY_DIR / file.filename
-    content = await file.read()
-    dest.write_bytes(content)
-    asyncio.create_task(rag.index_document(dest))
-    return {"status": "ok", "filename": file.filename}
+
+    if suffix in ALLOWED_DOC_EXT:
+        return await _upload_document(file, suffix)
+    elif suffix in AUDIO_EXT:
+        return await _upload_audio(file, suffix)
+    elif suffix in ALLOWED_IMAGE_EXT:
+        return await _upload_image(file, suffix)
+    else:
+        raise HTTPException(
+            400,
+            f"Tipo não suportado. Use: PDF, DOCX, TXT, MD, "
+            f"MP3/WAV/OGG/M4A (áudio) ou JPG/PNG/WEBP (imagem)"
+        )
+
+
+async def _upload_document(file: UploadFile, suffix: str):
+    active_id = proj_mgr.get_active_id()
+    mdir = proj_mgr.materials_dir(active_id)
+    dest = mdir / file.filename
+    dest.write_bytes(await file.read())
+    asyncio.create_task(_get_rag(active_id).index_document(dest))
+    return {"status": "ok", "filename": file.filename, "type": "document"}
+
+
+async def _upload_audio(file: UploadFile, suffix: str):
+    cfg = load_cfg()
+    openai_key = cfg.get("providers", {}).get("openai", {}).get("api_key", "")
+
+    active_id = proj_mgr.get_active_id()
+    mdir = proj_mgr.materials_dir(active_id)
+
+    # Save audio temporarily
+    tmp_path = mdir / file.filename
+    tmp_path.write_bytes(await file.read())
+
+    try:
+        transcript = await transc_svc.transcribe(tmp_path, openai_key)
+    except Exception as e:
+        tmp_path.unlink(missing_ok=True)
+        raise HTTPException(422, str(e))
+    finally:
+        # Remove source audio (keep only the transcript)
+        tmp_path.unlink(missing_ok=True)
+
+    stem = Path(file.filename).stem
+    md_name = f"[audio] {stem}.md"
+    md_path = mdir / md_name
+    md_path.write_text(
+        f"> 🎵 *Transcrição de áudio: {file.filename}*\n\n{transcript}",
+        encoding="utf-8"
+    )
+    asyncio.create_task(_get_rag(active_id).index_document(md_path))
+    return {"status": "ok", "filename": md_name, "type": "audio"}
+
+
+async def _upload_image(file: UploadFile, suffix: str):
+    cfg = load_cfg()
+    provider = cfg.get("default_provider", "")
+    if not provider:
+        raise HTTPException(400, "Configure um provedor de IA antes de enviar imagens para o conhecimento.")
+
+    prov_cfg = cfg.get("providers", {}).get(provider, {})
+    api_key  = prov_cfg.get("api_key", "")
+    model    = prov_cfg.get("model") or None
+
+    if not PROVIDERS_META.get(provider, {}).get("supports_vision"):
+        raise HTTPException(400, f"O provedor '{provider}' não suporta análise de imagens.")
+
+    raw = await file.read()
+    media_type = f"image/{suffix.lstrip('.')}" if suffix != ".jpg" else "image/jpeg"
+    image_b64  = f"data:{media_type};base64,{base64.b64encode(raw).decode()}"
+
+    try:
+        description = await ai_svc.describe_image(provider, api_key, model, image_b64, file.filename)
+    except Exception as e:
+        err = str(e)
+        if "429" in err or "quota" in err.lower():
+            raise HTTPException(429, "Limite de requisições da API atingido.")
+        raise HTTPException(502, f"Erro ao analisar imagem: {err[:200]}")
+
+    active_id = proj_mgr.get_active_id()
+    mdir  = proj_mgr.materials_dir(active_id)
+    stem  = Path(file.filename).stem
+    md_name = f"[imagem] {stem}.md"
+    md_path = mdir / md_name
+    md_path.write_text(
+        f"> 🖼️ *Análise de imagem: {file.filename}*\n\n{description}",
+        encoding="utf-8"
+    )
+    asyncio.create_task(_get_rag(active_id).index_document(md_path))
+    return {"status": "ok", "filename": md_name, "type": "image"}
 
 
 @app.delete("/api/documents/{filename}")
 async def delete_doc(filename: str):
-    path = _safe_path(filename)
+    active_id = proj_mgr.get_active_id()
+    path = _safe_path(filename, active_id)
     if not path.exists():
         raise HTTPException(404, "Arquivo não encontrado")
     path.unlink()
-    rag.remove_document(filename)
+    _get_rag(active_id).remove_document(filename)
     return {"status": "ok"}
 
 
 @app.post("/api/documents/{filename}/reindex")
 async def reindex_doc(filename: str):
-    path = _safe_path(filename)
+    active_id = proj_mgr.get_active_id()
+    path = _safe_path(filename, active_id)
     if not path.exists():
         raise HTTPException(404, "Arquivo não encontrado")
-    asyncio.create_task(rag.index_document(path))
+    asyncio.create_task(_get_rag(active_id).index_document(path))
     return {"status": "indexando"}
 
 
@@ -206,7 +385,7 @@ async def chat(req: ChatRequest):
         raise HTTPException(400, "Nenhum provedor de IA configurado. Configure nas Configurações.")
 
     prov_cfg = cfg.get("providers", {}).get(provider, {})
-    api_key = prov_cfg.get("api_key", "")
+    api_key  = prov_cfg.get("api_key", "")
     if not api_key:
         raise HTTPException(400, f"Chave API para '{provider}' não configurada.")
 
@@ -215,9 +394,9 @@ async def chat(req: ChatRequest):
     citations: List[Dict] = []
     web_results: List[Dict] = []
 
-    # RAG search
     if req.search_mode in ("materials", "both"):
-        hits = await rag.search(req.message, top_k=6)
+        active_id = proj_mgr.get_active_id()
+        hits = await _get_rag(active_id).search(req.message, top_k=6)
         if hits:
             context_parts.append("## Conteúdo dos seus materiais de estudo:\n")
             for i, h in enumerate(hits, 1):
@@ -226,7 +405,6 @@ async def chat(req: ChatRequest):
                 )
                 citations.append(h)
 
-    # Web search
     if req.search_mode in ("internet", "both"):
         web_results = await search_svc.search(req.message, max_results=5)
         if web_results:
@@ -257,7 +435,7 @@ async def chat(req: ChatRequest):
         err = str(e)
         if "429" in err or "quota" in err.lower() or "rate" in err.lower() or "ResourceExhausted" in type(e).__name__:
             raise HTTPException(429, "Limite de requisições da API atingido. Aguarde alguns minutos e tente novamente.")
-        if "401" in err or "403" in err or "authentication" in err.lower() or "api_key" in err.lower() or "api key" in err.lower():
+        if "401" in err or "403" in err or "authentication" in err.lower() or "api_key" in err.lower():
             raise HTTPException(401, "Chave de API inválida ou sem permissão. Verifique nas Configurações.")
         raise HTTPException(502, f"Erro no provedor de IA ({type(e).__name__}): {err[:300]}")
 
@@ -265,4 +443,4 @@ async def chat(req: ChatRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=False)
+    uvicorn.run("main:app", host="127.0.0.1", port=8765, reload=False)

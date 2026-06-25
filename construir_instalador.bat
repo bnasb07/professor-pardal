@@ -46,7 +46,7 @@ if %ISCC%=="" (
     echo  2. Instale o Inno Setup 6
     echo  3. Execute este script novamente
     echo.
-    echo  O launcher ProfessorPardal.exe ja foi criado na pasta "launcher\".
+    echo  O launcher ProfessorPardal.exe ja foi criado na pasta raiz do projeto.
     echo  Voce pode usa-lo diretamente ou aguardar o Inno Setup para o instalador.
     echo.
     pause & exit /b
@@ -70,6 +70,6 @@ if exist "dist\ProfessorPardal_Setup.exe" (
     set /p OPEN="Abrir a pasta dist? (S/N): "
     if /i "%OPEN%"=="S" explorer dist
 ) else (
-    echo   launcher\ProfessorPardal.exe criado com sucesso.
+    echo   ProfessorPardal.exe criado com sucesso.
 )
 pause

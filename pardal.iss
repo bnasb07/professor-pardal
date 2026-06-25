@@ -50,13 +50,11 @@ Source: "icon.ico";             DestDir: "{app}"; Flags: ignoreversion
 Source: "requirements.txt";     DestDir: "{app}"; Flags: ignoreversion
 Source: "services\*";           DestDir: "{app}\services"; Flags: ignoreversion recursesubdirs
 Source: "static\*";             DestDir: "{app}\static";   Flags: ignoreversion recursesubdirs
-Source: "study_materials\*";    DestDir: "{app}\study_materials"; Flags: ignoreversion recursesubdirs skipifsourcedoesntexist
-
 ; Lançador .exe (wrapper que chama pythonw)
-Source: "launcher\ProfessorPardal.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ProfessorPardal.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]
-Name: "{app}\study_materials"
+Name: "{app}\projects"
 
 [Icons]
 Name: "{group}\{#AppName}";        Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\icon.ico"

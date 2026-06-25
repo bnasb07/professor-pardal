@@ -13,7 +13,7 @@ if not exist ".venv\Scripts\python.exe" (
     aiofiles httpx Pillow duckduckgo-search pydantic ^
     anthropic openai google-generativeai ^
     chromadb sentence-transformers ^
-    pywebview pystray ^
+    "PySide6>=6.7.0" ^
     --quiet
 
 if exist ".venv\Scripts\python.exe" (
