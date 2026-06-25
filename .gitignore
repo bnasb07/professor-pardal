@@ -27,5 +27,10 @@ _launcher_stub.py
 # Ícone gerado (pode ser regenerado com gerar_icone.py)
 icon.ico
 
-# Launcher exe compilado (rebuildar com construir_instalador.bat)
+# Executável compilado (rebuildar com criar_launcher.py)
+*.exe
 launcher/
+
+# Variáveis de ambiente
+.env
+.env.*

@@ -39,16 +39,13 @@ def main():
     stub_path = BASE / "_launcher_stub.py"
     stub_path.write_text(STUB)
 
-    launcher_dir = BASE / "launcher"
-    launcher_dir.mkdir(exist_ok=True)
-
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--onefile",
         "--windowed",
         f"--icon={BASE / 'icon.ico'}",
         "--name=ProfessorPardal",
-        f"--distpath={launcher_dir}",
+        f"--distpath={BASE}",
         "--workpath=build_tmp",
         "--specpath=build_tmp",
         "--noconfirm",
@@ -59,9 +56,9 @@ def main():
     result = subprocess.run(cmd, cwd=str(BASE))
     stub_path.unlink(missing_ok=True)
 
-    exe = launcher_dir / "ProfessorPardal.exe"
+    exe = BASE / "ProfessorPardal.exe"
     if exe.exists():
-        print(f"\n✓ Launcher criado: {exe}  ({exe.stat().st_size // 1024} KB)")
+        print(f"\nLauncher criado: {exe}  ({exe.stat().st_size // 1024} KB)")
     else:
         print("\n✗ Falha ao criar launcher.")
         sys.exit(1)

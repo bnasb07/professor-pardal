@@ -60,7 +60,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Professor Pardal", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:8765"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -242,14 +242,24 @@ async def chat(req: ChatRequest):
 
     messages = list(req.history) + [{"role": "user", "content": req.message}]
 
-    response = await ai_svc.chat(
-        provider=provider,
-        api_key=api_key,
-        model=model,
-        system=system,
-        messages=messages,
-        images=req.images or [],
-    )
+    try:
+        response = await ai_svc.chat(
+            provider=provider,
+            api_key=api_key,
+            model=model,
+            system=system,
+            messages=messages,
+            images=req.images or [],
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(504, "A IA não respondeu em 30 segundos. Se sua cota estiver esgotada, aguarde alguns minutos e tente novamente.")
+    except Exception as e:
+        err = str(e)
+        if "429" in err or "quota" in err.lower() or "rate" in err.lower() or "ResourceExhausted" in type(e).__name__:
+            raise HTTPException(429, "Limite de requisições da API atingido. Aguarde alguns minutos e tente novamente.")
+        if "401" in err or "403" in err or "authentication" in err.lower() or "api_key" in err.lower() or "api key" in err.lower():
+            raise HTTPException(401, "Chave de API inválida ou sem permissão. Verifique nas Configurações.")
+        raise HTTPException(502, f"Erro no provedor de IA ({type(e).__name__}): {err[:300]}")
 
     return {"response": response, "citations": citations, "web_results": web_results}
 

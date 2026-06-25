@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import threading
+import traceback
 import urllib.request
 from pathlib import Path
 
@@ -15,12 +16,32 @@ PORT = 8765
 os.chdir(BASE_DIR)
 sys.path.insert(0, str(BASE_DIR))
 
+_LOG = BASE_DIR / "pardal_debug.log"
+
+def _log(msg: str):
+    try:
+        with open(_LOG, "a", encoding="utf-8") as f:
+            f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
+    except Exception:
+        pass
+
 
 # ── Servidor FastAPI ──────────────────────────────────────────────────────────
 
 def _start_server():
-    import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=PORT, log_level="error")
+    try:
+        # pythonw.exe tem stdout/stderr None — uvicorn llama isatty() e crasha
+        if sys.stdout is None:
+            sys.stdout = open(os.devnull, "w")
+        if sys.stderr is None:
+            sys.stderr = open(os.devnull, "w")
+        _log("Importando uvicorn...")
+        import uvicorn
+        _log(f"Iniciando uvicorn na porta {PORT}...")
+        uvicorn.run("main:app", host="127.0.0.1", port=PORT, log_level="error")
+        _log("Uvicorn encerrado.")
+    except Exception:
+        _log(f"ERRO no servidor:\n{traceback.format_exc()}")
 
 
 def _server_ready(timeout=25) -> bool:
@@ -67,9 +88,11 @@ def _run_tray(window):
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    _log(f"Iniciando. BASE_DIR={BASE_DIR} sys.executable={sys.executable}")
     # Se já há uma instância rodando, traz a janela para frente e sai
     try:
         urllib.request.urlopen(f"http://127.0.0.1:{PORT}/", timeout=1)
+        _log("Servidor já rodando — abrindo browser.")
         import webbrowser
         webbrowser.open(f"http://127.0.0.1:{PORT}/")
         return
@@ -77,10 +100,12 @@ def main():
         pass
 
     # Inicia servidor em thread daemon
+    _log("Iniciando thread do servidor...")
     threading.Thread(target=_start_server, daemon=True).start()
 
     # Aguarda servidor estar pronto
     if not _server_ready():
+        _log("TIMEOUT: servidor não iniciou em 25s.")
         try:
             import tkinter as tk
             from tkinter import messagebox

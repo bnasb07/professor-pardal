@@ -168,6 +168,8 @@ class AIProviderService:
             except Exception as e:
                 print(f"[Gemini] Imagem inválida ignorada: {e}")
 
-        loop = asyncio.get_event_loop()
-        resp = await loop.run_in_executor(None, lambda: chat.send_message(parts))
+        resp = await asyncio.wait_for(
+            chat.send_message_async(parts),
+            timeout=30.0,
+        )
         return resp.text
