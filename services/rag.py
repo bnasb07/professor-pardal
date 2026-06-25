@@ -15,6 +15,7 @@ class RAGService:
         self._client = None
         self._collection = None
         self._indexed_files: set = set()
+        self._indexing: set = set()
 
     def _get_model(self):
         if self._model is None:
@@ -45,8 +46,20 @@ class RAGService:
     def is_indexed(self, filename: str) -> bool:
         return filename in self._indexed_files
 
+    def is_indexing(self, filename: str) -> bool:
+        return filename in self._indexing
+
     async def index_document(self, path: Path):
-        loop = asyncio.get_event_loop()
+        if path.name in self._indexing:
+            return
+        self._indexing.add(path.name)
+        try:
+            await self._do_index(path)
+        finally:
+            self._indexing.discard(path.name)
+
+    async def _do_index(self, path: Path):
+        loop = asyncio.get_running_loop()
 
         chunks = await loop.run_in_executor(None, self.parser.parse, path)
         if not chunks:
@@ -74,7 +87,7 @@ class RAGService:
             for c in chunks
         ]
 
-        self.remove_document(path.name)
+        self.remove_document(path.name)  # safe: replaces in full before adding new
 
         batch_size = 100
         for i in range(0, len(texts), batch_size):
@@ -99,7 +112,7 @@ class RAGService:
         self._indexed_files.discard(filename)
 
     async def search(self, query: str, top_k: int = 6) -> List[Dict]:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         collection = self._get_collection()
 
         count = collection.count()

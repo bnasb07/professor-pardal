@@ -763,18 +763,68 @@ function addTyping() {
 }
 
 function renderMarkdown(text) {
-  return text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/^#{1,3} (.+)$/gm, (_, t) => `<strong>${t}</strong>`)
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>')
-    .replace(/^([^<].*)$/, '<p>$1</p>');
+  // 1. Escape HTML
+  let t = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // 2. Protect fenced code blocks from inline processing
+  const saved = [];
+  t = t.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, code) => {
+    saved.push(`<pre><code>${code.trimEnd()}</code></pre>`);
+    return `\x00${saved.length - 1}\x00`;
+  });
+
+  // 3. Inline formatting
+  t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  t = t.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+
+  // 4. Line-by-line structure
+  const lines = t.split('\n');
+  const out = [];
+  let inList = false;
+  let para = [];
+
+  const flushPara = () => {
+    if (para.length) { out.push(`<p>${para.join('<br>')}</p>`); para = []; }
+  };
+  const closeList = () => {
+    if (inList) { out.push('</ul>'); inList = false; }
+  };
+
+  for (const line of lines) {
+    // Saved code block placeholder on its own line
+    if (/^\x00\d+\x00$/.test(line)) {
+      flushPara(); closeList();
+      out.push(line);
+      continue;
+    }
+    // Headers
+    const hm = line.match(/^#{1,3} (.+)/);
+    if (hm) {
+      flushPara(); closeList();
+      out.push(`<p><strong>${hm[1]}</strong></p>`);
+      continue;
+    }
+    // List items (- or * or 1.)
+    const lm = line.match(/^(?:[-*]|\d+\.) (.+)/);
+    if (lm) {
+      flushPara();
+      if (!inList) { out.push('<ul>'); inList = true; }
+      out.push(`<li>${lm[1]}</li>`);
+      continue;
+    }
+    // Blank line → flush
+    if (!line.trim()) { flushPara(); closeList(); continue; }
+    // Normal text
+    closeList();
+    para.push(line);
+  }
+  flushPara(); closeList();
+
+  // 5. Restore code blocks
+  let html = out.join('\n');
+  saved.forEach((block, i) => { html = html.replace(`\x00${i}\x00`, block); });
+  return html;
 }
 
 function clearChat() {
@@ -789,11 +839,18 @@ function clearChat() {
 }
 
 // ── Documents ──
+let _docsTimer = null;
+
 async function loadDocs() {
   try {
     const r    = await fetch('/api/documents');
     const data = await r.json();
     renderDocs(data.documents);
+    // Auto-refresh while any document is still being indexed
+    clearTimeout(_docsTimer);
+    if ((data.documents || []).some(d => !d.indexed)) {
+      _docsTimer = setTimeout(loadDocs, 2500);
+    }
   } catch(e) { console.error(e); }
 }
 
@@ -809,22 +866,37 @@ function renderDocs(docs) {
     const size = doc.size > 1048576
       ? (doc.size/1048576).toFixed(1) + ' MB'
       : (doc.size/1024).toFixed(0) + ' KB';
+    const safeName = doc.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    const badge = doc.indexed
+      ? '<div class="doc-badge indexed">✓ Indexado</div>'
+      : doc.indexing
+        ? '<div class="doc-badge pending">⏳ Indexando...</div>'
+        : '<div class="doc-badge pending">⏳ Na fila...</div>';
+    const reindexBtn = !doc.indexed && !doc.indexing
+      ? `<button class="doc-btn reindex-btn" data-name="${safeName}">🔄</button>`
+      : '';
     return `
       <div class="doc-item">
         <div class="doc-icon">${icons[ext] || '📄'}</div>
         <div class="doc-info">
-          <strong title="${doc.name}">${doc.name}</strong>
+          <strong title="${safeName}">${doc.name}</strong>
           <span>${ext} · ${size}</span>
         </div>
-        <div class="doc-badge ${doc.indexed ? 'indexed' : 'pending'}">
-          ${doc.indexed ? '✓ Indexado' : '⏳ Indexando...'}
-        </div>
+        ${badge}
         <div class="doc-actions">
-          ${!doc.indexed ? `<button class="doc-btn" onclick="reindex('${doc.name}')">🔄</button>` : ''}
-          <button class="doc-btn danger" onclick="deleteDoc('${doc.name}')">🗑️</button>
+          ${reindexBtn}
+          <button class="doc-btn danger delete-btn" data-name="${safeName}">🗑️</button>
         </div>
       </div>`;
   }).join('');
+
+  // Attach handlers via data attributes — safe for any filename
+  list.querySelectorAll('.reindex-btn').forEach(btn =>
+    btn.addEventListener('click', () => reindex(btn.dataset.name))
+  );
+  list.querySelectorAll('.delete-btn').forEach(btn =>
+    btn.addEventListener('click', () => deleteDoc(btn.dataset.name))
+  );
 }
 
 async function uploadFiles(files) {

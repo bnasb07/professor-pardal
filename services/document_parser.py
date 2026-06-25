@@ -83,7 +83,10 @@ class DocumentParser:
             else:
                 if current:
                     chunks.append({"text": current, "page": page, "paragraph": paragraph})
-                current = sentence
+                    tail = current[-overlap:] if len(current) > overlap else current
+                    current = tail + " " + sentence
+                else:
+                    current = sentence
 
         if current:
             chunks.append({"text": current, "page": page, "paragraph": paragraph})

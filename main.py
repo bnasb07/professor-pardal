@@ -1,5 +1,6 @@
 import asyncio
 import json
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
@@ -18,18 +19,14 @@ BASE_DIR = Path(__file__).parent
 STUDY_DIR = BASE_DIR / "study_materials"
 CONFIG_FILE = BASE_DIR / "config.json"
 STATIC_DIR = BASE_DIR / "static"
+ALLOWED_EXT = {".pdf", ".docx", ".txt", ".md"}
 
 STUDY_DIR.mkdir(exist_ok=True)
-
-app = FastAPI(title="Professor Pardal")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 rag = RAGService(STUDY_DIR)
 ai_svc = AIProviderService()
 search_svc = WebSearchService()
 
-
-# ── Config helpers ────────────────────────────────────────────────────────────
 
 def load_cfg() -> dict:
     if CONFIG_FILE.exists():
@@ -41,6 +38,29 @@ def load_cfg() -> dict:
 def save_cfg(cfg: dict):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2, ensure_ascii=False)
+
+
+def _safe_path(filename: str) -> Path:
+    resolved = (STUDY_DIR / filename).resolve()
+    if not resolved.is_relative_to(STUDY_DIR.resolve()):
+        raise HTTPException(400, "Nome de arquivo inválido")
+    return resolved
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    cfg = load_cfg()
+    for prov, data in cfg.get("providers", {}).items():
+        if data.get("api_key"):
+            ai_svc.update_provider(prov, data["api_key"], data.get("model"))
+    for f in STUDY_DIR.iterdir():
+        if f.is_file() and f.suffix.lower() in ALLOWED_EXT and not rag.is_indexed(f.name):
+            asyncio.create_task(rag.index_document(f))
+    yield
+
+
+app = FastAPI(title="Professor Pardal", lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:8765"], allow_methods=["*"], allow_headers=["*"])
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -119,9 +139,6 @@ async def set_default(body: DefaultProvider):
 
 # ── Documents endpoints ────────────────────────────────────────────────────────
 
-ALLOWED_EXT = {".pdf", ".docx", ".txt", ".md"}
-
-
 @app.get("/api/documents")
 async def list_docs():
     docs = []
@@ -131,6 +148,7 @@ async def list_docs():
                 "name": f.name,
                 "size": f.stat().st_size,
                 "indexed": rag.is_indexed(f.name),
+                "indexing": rag.is_indexing(f.name),
             })
     return {"documents": docs}
 
@@ -149,7 +167,7 @@ async def upload_doc(file: UploadFile = File(...)):
 
 @app.delete("/api/documents/{filename}")
 async def delete_doc(filename: str):
-    path = STUDY_DIR / filename
+    path = _safe_path(filename)
     if not path.exists():
         raise HTTPException(404, "Arquivo não encontrado")
     path.unlink()
@@ -159,7 +177,7 @@ async def delete_doc(filename: str):
 
 @app.post("/api/documents/{filename}/reindex")
 async def reindex_doc(filename: str):
-    path = STUDY_DIR / filename
+    path = _safe_path(filename)
     if not path.exists():
         raise HTTPException(404, "Arquivo não encontrado")
     asyncio.create_task(rag.index_document(path))
@@ -234,20 +252,6 @@ async def chat(req: ChatRequest):
     )
 
     return {"response": response, "citations": citations, "web_results": web_results}
-
-
-# ── Startup ───────────────────────────────────────────────────────────────────
-
-@app.on_event("startup")
-async def on_startup():
-    cfg = load_cfg()
-    for prov, data in cfg.get("providers", {}).items():
-        if data.get("api_key"):
-            ai_svc.update_provider(prov, data["api_key"], data.get("model"))
-
-    for f in STUDY_DIR.iterdir():
-        if f.is_file() and f.suffix.lower() in ALLOWED_EXT and not rag.is_indexed(f.name):
-            asyncio.create_task(rag.index_document(f))
 
 
 if __name__ == "__main__":

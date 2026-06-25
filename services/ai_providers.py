@@ -161,12 +161,12 @@ class AIProviderService:
         parts: List = [last["content"]]
 
         for img in images:
-            raw = img
-            if img.startswith("data:"):
-                raw = img.split(",", 1)[1]
-            img_bytes = base64.b64decode(raw)
-            pil_img = PIL.Image.open(io.BytesIO(img_bytes))
-            parts.append(pil_img)
+            try:
+                raw = img.split(",", 1)[1] if img.startswith("data:") else img
+                pil_img = PIL.Image.open(io.BytesIO(base64.b64decode(raw)))
+                parts.append(pil_img)
+            except Exception as e:
+                print(f"[Gemini] Imagem inválida ignorada: {e}")
 
         loop = asyncio.get_event_loop()
         resp = await loop.run_in_executor(None, lambda: chat.send_message(parts))
